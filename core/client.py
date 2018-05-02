@@ -57,9 +57,9 @@ class RiotClient(object):
 		except Summoner.DoesNotExist:
 			pass
 		raw_summoner_data = self._call_riot_api(url)
-		summoner_data = self._map_raw_data_keys(settings.SUMMONER_RAW_DATA_MAP, raw_summoner_data, last_updated=True)
+		summoner_data = self._map_raw_data_keys(settings.SUMMONER_MAPPING, raw_summoner_data, last_updated=True)
 		Summoner.objects.update_or_create(name=summoner_name, defaults=summoner_data)
-		update_summoner_mastery_data(summoner_name)
+		self.update_summoner_mastery_data(summoner_name)
 
 	def update_summoner_mastery_data(self, summoner_name):
 		summoner = Summoner.objects.get(name=summoner_name)
@@ -67,7 +67,7 @@ class RiotClient(object):
 		raw_mastery_data_list = self._call_riot_api(url)
 		for raw_mastery_data in raw_mastery_data_list:
 			mastery_data = self._map_raw_data_keys(settings.CHAMPION_MASTERY_MAPPING, raw_mastery_data, last_updated=True)
-			ChampionMastery.objects.update_or_create(champion_id=mastery_data["champion_id"], defaults=mastery_data)
+			ChampionMastery.objects.update_or_create(summoner_id=summoner.summoner_id, champion_id=mastery_data["champion_id"], defaults=mastery_data)
 
 	def update_static_champion_data(self):
 		url = "static-data/v3/champions"
